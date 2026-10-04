@@ -25,36 +25,55 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      # 1. Biarkan Flutter menyiapkan Podfile, dependensi, dan kode Dart. 
-      # Langkah ini mungkin error di akhir karena sertifikat, tapi persiapannya akan selesai.
-      - name: Prepare Flutter Build
+      # Langkah 1: Biarkan Flutter menyiapkan semua konfigurasi iOS
+      # (Podfile, pod install, kompilasi kode Dart, dsb.)
+      # Meskipun error di akhir, semua persiapan tetap selesai.
+      - name: Prepare iOS Build
         run: flutter build ios --release --no-codesign
         continue-on-error: true
 
-      # 2. Kita ambil alih menggunakan mesin kompilasi asli Apple (Xcode) 
-      # dan secara paksa mematikan semua pengecekan sertifikat!
-      - name: Force Build Unsigned App
+      # Langkah 2: Bersihkan cache Xcode agar tidak bentrok
+      - name: Clean Xcode Cache
         run: |
           cd ios
-          xcodebuild build \
+          xcodebuild clean \
+            -workspace Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release
+
+      # Langkah 3: Build ulang dari awal menggunakan Xcode langsung
+      # dengan SEMUA pengecekan sertifikat dimatikan
+      - name: Build with Xcode (No Signing)
+        run: |
+          cd ios
+          xcodebuild clean build \
             -workspace Runner.xcworkspace \
             -scheme Runner \
             -configuration Release \
             -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             CONFIGURATION_BUILD_DIR="$(pwd)/build/output"
 
-      # 3. Kemas hasil jadinya ke file IPA untuk Sideloadly
+      # Langkah 4: Verifikasi file aplikasi ada dan lengkap
+      - name: Verify Runner.app
+        run: |
+          echo "=== Isi Runner.app ==="
+          ls -la ios/build/output/Runner.app/
+          test -f ios/build/output/Runner.app/Info.plist && echo "Info.plist DITEMUKAN!" || (echo "GAGAL: Info.plist tidak ada!" && exit 1)
+
+      # Langkah 5: Kemas menjadi file IPA
       - name: Package into IPA
         run: |
           mkdir -p Payload
           cp -r ios/build/output/Runner.app Payload/
           zip -r lapangin.ipa Payload
-          echo "File IPA berhasil dibuat dengan isi yang lengkap!"
+          echo "=== IPA berhasil dibuat! ==="
+          ls -la lapangin.ipa
 
-      # Upload file .ipa agar bisa di-download dari halaman Actions
+      # Langkah 6: Upload agar bisa di-download
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
         with:
