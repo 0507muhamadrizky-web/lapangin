@@ -7,16 +7,19 @@ on:
   pull_request:
     branches:
       - main
-  workflow_dispatch: # Memungkinkan Anda memicu build secara manual
+  workflow_dispatch:
 
 jobs:
   build-ios:
     name: Build iOS App
-    runs-on: macos-latest
+    runs-on: macos-14
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Select Xcode version
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -27,27 +30,33 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      # Mempersiapkan konfigurasi (kita pancing lewat simulator agar tidak error sertifikat)
-      - name: Prepare iOS Config
-        run: flutter build ios --simulator
-
-      # Mem-build aplikasi mentah untuk iPhone sungguhan (tanpa tanda tangan)
-      - name: Build Unsigned App
+      - name: Install CocoaPods dependencies
         run: |
           cd ios
-          xcodebuild build -workspace Runner.xcworkspace -scheme Runner -configuration Release -sdk iphoneos CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGNING_IDENTITY="" CONFIGURATION_BUILD_DIR=build
-          
-      # Mengemas hasil build menjadi file .ipa
+          pod install --repo-update
+
+      - name: Build iOS (No Codesign)
+        run: |
+          cd ios
+          xcodebuild build \
+            -workspace Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CONFIGURATION_BUILD_DIR="$(pwd)/build/output"
+
       - name: Package into IPA
         run: |
-          mkdir -p build/ios/iphoneos/Payload
-          cp -r ios/build/Runner.app build/ios/iphoneos/Payload/
-          cd build/ios/iphoneos
-          zip -r app.ipa Payload
+          mkdir -p Payload
+          cp -r ios/build/output/Runner.app Payload/
+          zip -r lapangin.ipa Payload
 
-      # Mengupload file .ipa agar bisa Anda download
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
         with:
           name: lapangin-unsigned-ipa
-          path: build/ios/iphoneos/app.ipa
+          path: lapangin.ipa
