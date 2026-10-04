@@ -27,15 +27,15 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      # Mempersiapkan konfigurasi iOS
+      # Mempersiapkan konfigurasi (kita pancing lewat simulator agar tidak error sertifikat)
       - name: Prepare iOS Config
-        run: flutter build ios --config-only
+        run: flutter build ios --simulator
 
-      # Mem-build aplikasi menggunakan xcodebuild tanpa tanda tangan (codesign)
+      # Mem-build aplikasi mentah untuk iPhone sungguhan (tanpa tanda tangan)
       - name: Build Unsigned App
         run: |
           cd ios
-          xcodebuild build -workspace Runner.xcworkspace -scheme Runner -configuration Release -sdk iphoneos CODE_SIGNING_ALLOWED=NO
+          xcodebuild build -workspace Runner.xcworkspace -scheme Runner -configuration Release -sdk iphoneos CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGNING_IDENTITY=""
           
       # Mengemas hasil build menjadi file .ipa
       - name: Package into IPA
