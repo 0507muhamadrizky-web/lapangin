@@ -27,10 +27,11 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      # Mem-build aplikasi iOS tanpa penandatanganan (codesign)
-      # Ini berguna untuk memastikan kode Anda dapat di-build di iOS dengan sukses
-      - name: Build iOS (No Codesign)
-        run: flutter build ios --release --no-codesign
+      # Mem-build aplikasi iOS untuk simulator (tanpa penandatanganan / codesign)
+      # Ini adalah cara terbaik untuk mengetes apakah kode Anda aman dari error iOS
+      # tanpa perlu memiliki akun Apple Developer berbayar.
+      - name: Build iOS (Simulator)
+        run: flutter build ios --simulator
 
       # Jika Anda nantinya memiliki akun Apple Developer dan ingin membuat file .ipa
       # Anda perlu mengatur provisioning profile dan sertifikat.
