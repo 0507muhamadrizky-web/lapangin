@@ -27,12 +27,27 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      # Mem-build aplikasi iOS untuk simulator (tanpa penandatanganan / codesign)
-      # Ini adalah cara terbaik untuk mengetes apakah kode Anda aman dari error iOS
-      # tanpa perlu memiliki akun Apple Developer berbayar.
-      - name: Build iOS (Simulator)
-        run: flutter build ios --simulator
+      # Mempersiapkan konfigurasi iOS
+      - name: Prepare iOS Config
+        run: flutter build ios --config-only
 
-      # Jika Anda nantinya memiliki akun Apple Developer dan ingin membuat file .ipa
-      # Anda perlu mengatur provisioning profile dan sertifikat.
-      # Panduan: https://docs.flutter.dev/deployment/ios
+      # Mem-build aplikasi menggunakan xcodebuild tanpa tanda tangan (codesign)
+      - name: Build Unsigned App
+        run: |
+          cd ios
+          xcodebuild build -workspace Runner.xcworkspace -scheme Runner -configuration Release -sdk iphoneos CODE_SIGNING_ALLOWED=NO
+          
+      # Mengemas hasil build menjadi file .ipa
+      - name: Package into IPA
+        run: |
+          mkdir -p build/ios/iphoneos/Payload
+          cp -r build/ios/Release-iphoneos/Runner.app build/ios/iphoneos/Payload/
+          cd build/ios/iphoneos
+          zip -r app.ipa Payload
+
+      # Mengupload file .ipa agar bisa Anda download
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lapangin-unsigned-ipa
+          path: build/ios/iphoneos/app.ipa
