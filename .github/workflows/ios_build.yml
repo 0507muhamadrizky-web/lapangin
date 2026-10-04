@@ -1,0 +1,37 @@
+name: iOS Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch: # Memungkinkan Anda memicu build secara manual
+
+jobs:
+  build-ios:
+    name: Build iOS App
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      # Mem-build aplikasi iOS tanpa penandatanganan (codesign)
+      # Ini berguna untuk memastikan kode Anda dapat di-build di iOS dengan sukses
+      - name: Build iOS (No Codesign)
+        run: flutter build ios --release --no-codesign
+
+      # Jika Anda nantinya memiliki akun Apple Developer dan ingin membuat file .ipa
+      # Anda perlu mengatur provisioning profile dan sertifikat.
+      # Panduan: https://docs.flutter.dev/deployment/ios

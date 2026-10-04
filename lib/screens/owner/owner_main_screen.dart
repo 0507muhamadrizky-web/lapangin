@@ -1,0 +1,12 @@
+import 'package:flutter/material.dart';
+
+class OwnerMainScreen extends StatelessWidget {
+  final Widget child;
+  const OwnerMainScreen({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(body: child);
+  }
+}
+
