@@ -35,13 +35,13 @@ jobs:
       - name: Build Unsigned App
         run: |
           cd ios
-          xcodebuild build -workspace Runner.xcworkspace -scheme Runner -configuration Release -sdk iphoneos CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGNING_IDENTITY=""
+          xcodebuild build -workspace Runner.xcworkspace -scheme Runner -configuration Release -sdk iphoneos CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGNING_IDENTITY="" CONFIGURATION_BUILD_DIR=build
           
       # Mengemas hasil build menjadi file .ipa
       - name: Package into IPA
         run: |
           mkdir -p build/ios/iphoneos/Payload
-          cp -r build/ios/Release-iphoneos/Runner.app build/ios/iphoneos/Payload/
+          cp -r ios/build/Runner.app build/ios/iphoneos/Payload/
           cd build/ios/iphoneos
           zip -r app.ipa Payload
 
