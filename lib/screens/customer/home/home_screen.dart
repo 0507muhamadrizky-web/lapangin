@@ -181,7 +181,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 final sport = AppConstants.sportTypes[index];
                 return _buildCategoryItem(
                   sport,
-                  IconData(AppConstants.sportIcons[sport]!, fontFamily: 'MaterialIcons'),
+                  AppConstants.sportIcons[sport] ?? Icons.sports,
                 );
               },
             ),

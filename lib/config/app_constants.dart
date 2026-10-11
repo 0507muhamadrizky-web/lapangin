@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class AppConstants {
   static const String appName = 'Lapangin';
   static const String appTagline = 'Sewa Lapangan Jadi Mudah';
@@ -35,14 +37,14 @@ class AppConstants {
     'Voli',
   ];
 
-  // Sport Icons (using Material Icons codepoints)
-  static const Map<String, int> sportIcons = {
-    'Futsal': 0xe559,      // sports_soccer
-    'Badminton': 0xf05b5,  // sports
-    'Basket': 0xe558,      // sports_basketball
-    'Tenis': 0xe55c,       // sports_tennis
-    'Sepak Bola': 0xe559,  // sports_soccer
-    'Voli': 0xe55d,        // sports_volleyball
+  // Sport Icons
+  static const Map<String, IconData> sportIcons = {
+    'Futsal': Icons.sports_soccer,
+    'Badminton': Icons.sports,
+    'Basket': Icons.sports_basketball,
+    'Tenis': Icons.sports_tennis,
+    'Sepak Bola': Icons.sports_soccer,
+    'Voli': Icons.sports_volleyball,
   };
 
   // Facilities
